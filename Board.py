@@ -5,6 +5,10 @@ from Translator import *
 class Board:
     def __init__(self):
         self.board = [[0 for x in range(8)] for y in range(8)]
+        self.white_points = 0
+        self.black_points = 0
+        self.moves = []
+        self.whiteTurn = True
 
     def printBoard(self):
         for row in self.board:
@@ -23,8 +27,36 @@ class Board:
     def getBoardValue(self, x, y):
         return self.board[y][x]
 
+    def isEmpty(self, sq):
+        coords = square_to_tuple(sq)
+        piece = self.getBoardValue(coords[0], coords[1])
+        if piece == 0:
+            return True
+        else:
+            return False
+
+    def isWhite(self, sq):
+        coords = square_to_tuple(sq)
+        piece = self.getBoardValue(coords[0], coords[1])
+        if piece % 2 > 0:
+            return True
+        else:
+            return False
+
     def fillNaturalBoard(self):
         self.setBoard(NaturalBoard)
+        self.calculatePoints()
+
+    def calculatePoints(self):
+        for i in self.board:
+            for j in i:
+                if j != 0:
+                    if j % 2 > 0:
+                        self.white_points += piece_to_points(j)
+                    elif j % 2 == 0:
+                        self.black_points += piece_to_points(j)
+
+        return [self.white_points, self.black_points]
 
     def move(self, coords1, coords2):
         coords1 = square_to_tuple(coords1)
@@ -33,14 +65,320 @@ class Board:
         if msg == "OK":
             self.setBoardValue(
                 coords2[0], coords2[1], self.getBoardValue(coords1[0], coords1[1]))
+
             self.setBoardValue(coords1[0], coords1[1], 0)
+
+            self.moves.append([self.whiteTurn, tuple_to_square(
+                coords1), tuple_to_square(coords2)])
+
+            self.whiteTurn = not self.whiteTurn
             return msg
         else:
             return msg
 
     def checkmove(self, coords1, coords2):
+        if self.getBoardValue(coords1[0], coords1[1]) % 2 == 0 and self.whiteTurn:
+            return "It is White Turn"
+        if self.getBoardValue(coords1[0], coords1[1]) % 2 > 0 and not self.whiteTurn:
+            return "It is Black Turn"
         if coords1[0] == coords2[0] and coords1[1] == coords2[1]:
             return "Destination same as starting position"
         if self.getBoardValue(coords1[0], coords1[1]) == 0:
             return "No piece at starting position"
         return "OK"
+
+    def getMovesOfPiece(self, coords):
+        coords = square_to_tuple(coords)
+        piece = self.getBoardValue(coords[0], coords[1])
+        moves = []
+        # White Pawn
+        if piece == 1:
+            # Check if pawn can go forward one
+            if self.getBoardValue(coords[0], coords[1]-1) == 0:
+                moves.append((coords[0], coords[1] - 1))
+            # Check if pawn can go forward two
+            if coords[1] == 6 and self.getBoardValue(coords[0], coords[1]-2) == 0:
+                moves.append((coords[0], coords[1] - 2))
+            # Check if pawn can take a piece at left diagonal
+            if self.getBoardValue(coords[0]-1, coords[1]-1) != 0:
+                moves.append((coords[0]-1, coords[1] - 1))
+            # Check if pawn can take a piece at right di agonal
+            if self.getBoardValue(coords[0]+1, coords[1]-1) != 0:
+                moves.append((coords[0]+1, coords[1] - 1))
+            # Check if pawn can en passant
+
+        # Black Pawn
+        elif piece == 2:
+            # Check if pawn can go forward one
+            if self.getBoardValue(coords[0], coords[1]+1) == 0:
+                moves.append((coords[0], coords[1] + 1))
+            # Check if pawn can go forward two
+            if coords[1] == 1 and self.getBoardValue(coords[0], coords[1]+2) == 0:
+                moves.append((coords[0], coords[1] + 2))
+            # Check if pawn can take a piece at left diagonal
+            if self.getBoardValue(coords[0]-1, coords[1]+1) != 0:
+                moves.append((coords[0]-1, coords[1] + 1))
+            # Check if pawn can take a piece at right diagonal
+            if self.getBoardValue(coords[0]+1, coords[1]+1) != 0:
+                moves.append((coords[0]+1, coords[1] + 1))
+            # Check if pawn can en passant
+
+        # Knight
+        elif piece == 5 or piece == 6:
+            # Check if knight can go forward two and left one
+            if coords[1] > 1 and coords[0] > 0:
+                if self.getBoardValue(coords[0]-1, coords[1]-2) == 0 or self.getBoardValue(coords[0]-1, coords[1]-2) % 2 != piece % 2:
+                    moves.append((coords[0]-1, coords[1]-2))
+            # Check if knight can go forward two and right one
+            if coords[1] > 1 and coords[0] < 7:
+                if self.getBoardValue(coords[0]+1, coords[1]-2) == 0 or self.getBoardValue(coords[0]+1, coords[1]-2) % 2 != piece % 2:
+                    moves.append((coords[0]+1, coords[1]-2))
+            # Check if knight can go forward one and left two
+            if coords[1] > 0 and coords[0] > 1:
+                if self.getBoardValue(coords[0]-2, coords[1]-1) == 0 or self.getBoardValue(coords[0]-2, coords[1]-1) % 2 != piece % 2:
+                    moves.append((coords[0]-2, coords[1]-1))
+            # Check if knight can go forward one and right two
+            if coords[1] > 0 and coords[0] < 6:
+                if self.getBoardValue(coords[0]+2, coords[1]-1) == 0 or self.getBoardValue(coords[0]+2, coords[1]-1) % 2 != piece % 2:
+                    moves.append((coords[0]+2, coords[1]-1))
+            # Check if knight can go backward two and left one
+            if coords[1] < 6 and coords[0] > 0:
+                if self.getBoardValue(coords[0]-1, coords[1]+2) == 0 or self.getBoardValue(coords[0]-1, coords[1]+2) % 2 != piece % 2:
+                    moves.append((coords[0]-1, coords[1]+2))
+            # Check if knight can go backward two and right one
+            if coords[1] < 6 and coords[0] < 7:
+                if self.getBoardValue(coords[0]+1, coords[1]+2) == 0 or self.getBoardValue(coords[0]+1, coords[1]+2) % 2 != piece % 2:
+                    moves.append((coords[0]+1, coords[1]+2))
+            # Check if knight can go backward one and left two
+            if coords[1] < 7 and coords[0] > 1:
+                if self.getBoardValue(coords[0]-2, coords[1]+1) == 0 or self.getBoardValue(coords[0]-2, coords[1]+1) % 2 != piece % 2:
+                    moves.append((coords[0]-2, coords[1]+1))
+            # Check if knight can go backward one and right two
+            if coords[1] < 7 and coords[0] < 6:
+                if self.getBoardValue(coords[0]+2, coords[1]+1) == 0 or self.getBoardValue(coords[0]+2, coords[1]+1) % 2 != piece % 2:
+                    moves.append((coords[0]+2, coords[1]+1))
+
+        # Bishop
+        elif piece == 8 or piece == 7:
+            # Check if bishop can go forward left
+            for i in range(1, 8):
+                if coords[0]-i < 0 or coords[1]-i < 0:
+                    break
+                if self.getBoardValue(coords[0]-i, coords[1]-i) == 0:
+                    moves.append((coords[0]-i, coords[1]-i))
+                elif self.getBoardValue(coords[0]-i, coords[1]-i) % 2 != piece % 2:
+                    moves.append((coords[0]-i, coords[1]-i))
+                    break
+                else:
+                    break
+            # Check if bishop can go forward right
+            for i in range(1, 8):
+                if coords[0]+i > 7 or coords[1]-i < 0:
+                    break
+                if self.getBoardValue(coords[0]+i, coords[1]-i) == 0:
+                    moves.append((coords[0]+i, coords[1]-i))
+                elif self.getBoardValue(coords[0]+i, coords[1]-i) % 2 != piece % 2:
+                    moves.append((coords[0]+i, coords[1]-i))
+                    break
+                else:
+                    break
+            # Check if bishop can go backward left
+            for i in range(1, 8):
+                if coords[0]-i < 0 or coords[1]+i > 7:
+                    break
+                if self.getBoardValue(coords[0]-i, coords[1]+i) == 0:
+                    moves.append((coords[0]-i, coords[1]+i))
+                elif self.getBoardValue(coords[0]-i, coords[1]+i) % 2 != piece % 2:
+                    moves.append((coords[0]-i, coords[1]+i))
+                    break
+                else:
+                    break
+            # Check if bishop can go backward right
+            for i in range(1, 8):
+                if coords[0]+i > 7 or coords[1]+i > 7:
+                    break
+                if self.getBoardValue(coords[0]+i, coords[1]+i) == 0:
+                    moves.append((coords[0]+i, coords[1]+i))
+                elif self.getBoardValue(coords[0]+i, coords[1]+i) % 2 != piece % 2:
+                    moves.append((coords[0]+i, coords[1]+i))
+                    break
+                else:
+                    break
+
+        # Rook
+        elif piece == 3 or piece == 4:
+            # Check if rook can go forward
+            for i in range(1, 8):
+                if coords[1]-i < 0:
+                    break
+                if self.getBoardValue(coords[0], coords[1]-i) == 0:
+                    moves.append((coords[0], coords[1]-i))
+                elif self.getBoardValue(coords[0], coords[1]-i) % 2 != piece % 2:
+                    moves.append((coords[0], coords[1]-i))
+                    break
+                else:
+                    break
+            # Check if rook can go backward
+            for i in range(1, 8):
+                if coords[1]+i > 7:
+                    break
+                if self.getBoardValue(coords[0], coords[1]+i) == 0:
+                    moves.append((coords[0], coords[1]+i))
+                elif self.getBoardValue(coords[0], coords[1]+i) % 2 != piece % 2:
+                    moves.append((coords[0], coords[1]+i))
+                    break
+                else:
+                    break
+            # Check if rook can go left
+            for i in range(1, 8):
+                if coords[0]-i < 0:
+                    break
+                if self.getBoardValue(coords[0]-i, coords[1]) == 0:
+                    moves.append((coords[0]-i, coords[1]))
+                elif self.getBoardValue(coords[0]-i, coords[1]) % 2 != piece % 2:
+                    moves.append((coords[0]-i, coords[1]))
+                    break
+                else:
+                    break
+            # Check if rook can go right
+            for i in range(1, 8):
+                if coords[0]+i > 7:
+                    break
+                if self.getBoardValue(coords[0]+i, coords[1]) == 0:
+                    moves.append((coords[0]+i, coords[1]))
+                elif self.getBoardValue(coords[0]+i, coords[1]) % 2 != piece % 2:
+                    moves.append((coords[0]+i, coords[1]))
+                    break
+                else:
+                    break
+
+        # Queen
+        elif piece == 9 or piece == 10:
+            # Check if queen can go forward
+            for i in range(1, 8):
+                if coords[1]-i < 0:
+                    break
+                if self.getBoardValue(coords[0], coords[1]-i) == 0:
+                    moves.append((coords[0], coords[1]-i))
+                elif self.getBoardValue(coords[0], coords[1]-i) % 2 != piece % 2:
+                    moves.append((coords[0], coords[1]-i))
+                    break
+                else:
+                    break
+            # Check if queen can go backward
+            for i in range(1, 8):
+                if coords[1]+i > 7:
+                    break
+                if self.getBoardValue(coords[0], coords[1]+i) == 0:
+                    moves.append((coords[0], coords[1]+i))
+                elif self.getBoardValue(coords[0], coords[1]+i) % 2 != piece % 2:
+                    moves.append((coords[0], coords[1]+i))
+                    break
+                else:
+                    break
+            # Check if queen can go left
+            for i in range(1, 8):
+                if coords[0]-i < 0:
+                    break
+                if self.getBoardValue(coords[0]-i, coords[1]) == 0:
+                    moves.append((coords[0]-i, coords[1]))
+                elif self.getBoardValue(coords[0]-i, coords[1]) % 2 != piece % 2:
+                    moves.append((coords[0]-i, coords[1]))
+                    break
+                else:
+                    break
+            # Check if queen can go right
+            for i in range(1, 8):
+                if coords[0]+i > 7:
+                    break
+                if self.getBoardValue(coords[0]+i, coords[1]) == 0:
+                    moves.append((coords[0]+i, coords[1]))
+                elif self.getBoardValue(coords[0]+i, coords[1]) % 2 != piece % 2:
+                    moves.append((coords[0]+i, coords[1]))
+                    break
+                else:
+                    break
+            # Check if queen can go forward left
+            for i in range(1, 8):
+                if coords[0]-i < 0 or coords[1]-i < 0:
+                    break
+                if self.getBoardValue(coords[0]-i, coords[1]-i) == 0:
+                    moves.append((coords[0]-i, coords[1]-i))
+                elif self.getBoardValue(coords[0]-i, coords[1]-i) % 2 != piece % 2:
+                    moves.append((coords[0]-i, coords[1]-i))
+                    break
+                else:
+                    break
+            # Check if queen can go forward right
+            for i in range(1, 8):
+                if coords[0]+i > 7 or coords[1]-i < 0:
+                    break
+                if self.getBoardValue(coords[0]+i, coords[1]-i) == 0:
+                    moves.append((coords[0]+i, coords[1]-i))
+                elif self.getBoardValue(coords[0]+i, coords[1]-i) % 2 != piece % 2:
+                    moves.append((coords[0]+i, coords[1]-i))
+                    break
+                else:
+                    break
+            # Check if queen can go backward left
+            for i in range(1, 8):
+                if coords[0]-i < 0 or coords[1]+i > 7:
+                    break
+                if self.getBoardValue(coords[0]-i, coords[1]+i) == 0:
+                    moves.append((coords[0]-i, coords[1]+i))
+                elif self.getBoardValue(coords[0]-i, coords[1]+i) % 2 != piece % 2:
+                    moves.append((coords[0]-i, coords[1]+i))
+                    break
+                else:
+                    break
+            # Check if queen can go backward right
+            for i in range(1, 8):
+                if coords[0]+i > 7 or coords[1]+i > 7:
+                    break
+                if self.getBoardValue(coords[0]+i, coords[1]+i) == 0:
+                    moves.append((coords[0]+i, coords[1]+i))
+                elif self.getBoardValue(coords[0]+i, coords[1]+i) % 2 != piece % 2:
+                    moves.append((coords[0]+i, coords[1]+i))
+                    break
+                else:
+                    break
+
+        # King
+        elif piece == 11 or piece == 12:
+            # Check if king can go forward
+            if coords[1]-1 >= 0:
+                if self.getBoardValue(coords[0], coords[1]-1) == 0 or self.getBoardValue(coords[0], coords[1]-1) % 2 != piece % 2:
+                    moves.append((coords[0], coords[1]-1))
+            # Check if king can go backward
+            if coords[1]+1 <= 7:
+                if self.getBoardValue(coords[0], coords[1]+1) == 0 or self.getBoardValue(coords[0], coords[1]+1) % 2 != piece % 2:
+                    moves.append((coords[0], coords[1]+1))
+            # Check if king can go left
+            if coords[0]-1 >= 0:
+                if self.getBoardValue(coords[0]-1, coords[1]) == 0 or self.getBoardValue(coords[0]-1, coords[1]) % 2 != piece % 2:
+                    moves.append((coords[0]-1, coords[1]))
+            # Check if king can go right
+            if coords[0]+1 <= 7:
+                if self.getBoardValue(coords[0]+1, coords[1]) == 0 or self.getBoardValue(coords[0]+1, coords[1]) % 2 != piece % 2:
+                    moves.append((coords[0]+1, coords[1]))
+            # Check if king can go forward left
+            if coords[0]-1 >= 0 and coords[1]-1 >= 0:
+                if self.getBoardValue(coords[0]-1, coords[1]-1) == 0 or self.getBoardValue(coords[0]-1, coords[1]-1) % 2 != piece % 2:
+                    moves.append((coords[0]-1, coords[1]-1))
+            # Check if king can go forward right
+            if coords[0]+1 <= 7 and coords[1]-1 >= 0:
+                if self.getBoardValue(coords[0]+1, coords[1]-1) == 0 or self.getBoardValue(coords[0]+1, coords[1]-1) % 2 != piece % 2:
+                    moves.append((coords[0]+1, coords[1]-1))
+            # Check if king
+            if coords[0]-1 >= 0 and coords[1]+1 <= 7:
+                if self.getBoardValue(coords[0]-1, coords[1]+1) == 0 or self.getBoardValue(coords[0]-1, coords[1]+1) % 2 != piece % 2:
+                    moves.append((coords[0]-1, coords[1]+1))
+            # Check if king
+            if coords[0]+1 <= 7 and coords[1]+1 <= 7:
+                if self.getBoardValue(coords[0]+1, coords[1]+1) == 0 or self.getBoardValue(coords[0]+1, coords[1]+1) % 2 != piece % 2:
+                    moves.append((coords[0]+1, coords[1]+1))
+
+        for i in range(len(moves)):
+            moves[i] = tuple_to_square(moves[i])
+
+        return moves
