@@ -13,16 +13,16 @@ columns = ["a", "b", "c", "d", "e", "f", "g", "h"]
 
 # [Piece, Points]
 PointsConverter = [
-    [1, 1],
-    [2, 1],
-    [3, 5],
-    [4, 5],
-    [5, 3],
-    [6, 3],
-    [7, 3],
-    [8, 3],
-    [9, 9],
-    [10, 9],
-    [11, 0],
-    [12, 0],
+    [1, 1],  # White Pawn
+    [2, 1],  # Black Pawn
+    [3, 5],  # White Rook
+    [4, 5],  # Black Rook
+    [5, 3],  # White Knight
+    [6, 3],  # Black Knight
+    [7, 3],  # White Bishop
+    [8, 3],  # Black Bishop
+    [9, 9],  # White Queen
+    [10, 9],  # Black Queen
+    [11, 0],  # White King
+    [12, 0],  # Black King
 ]
