@@ -382,3 +382,10 @@ class Board:
             moves[i] = tuple_to_square(moves[i])
 
         return moves
+
+    def getBoardOfMoves(self, moves):
+        board = [[0 for x in range(8)] for y in range(8)]
+        for move in moves:
+            coords = square_to_tuple(move)
+            board[coords[1]][coords[0]] = 1
+        return board
