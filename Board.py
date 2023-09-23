@@ -44,8 +44,16 @@ class Board:
             return False
 
     def fillNaturalBoard(self):
-        self.setBoard(NaturalBoard)
+        # I have to make a deep copy of NaturalBoard because
+        # if not it will be a reference to the same object
+        # causing NaturalBoard be modified if board does
+        for i in range(len(self.board)):
+            for j in range(len(self.board)):
+                self.board[i][j] = NaturalBoard[i][j]
+        self.moves = []
         self.calculatePoints()
+        self.whiteTurn = True
+        return self.board
 
     def calculatePoints(self):
         for i in self.board:

@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import a from "./Translator";
 
 export default function Chessboard() {
   const [board, setBoard] = useState([]);
   const [possibleMoves, setPossibleMoves] = useState([]);
+  const [selectedPiece, setSelectedPiece] = useState(null);
 
   useEffect(() => {
     fetch("http://localhost:4002/", {
@@ -15,18 +17,47 @@ export default function Chessboard() {
       .catch((err) => console.log(err));
   }, []);
 
-  const handleCellClick = (rowIndex, colIndex) => {
-    fetch(`http://localhost:4002/possible-moves?x=${rowIndex}&y=${colIndex}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((res) => res.json())
-      .then((res) => {
-        setPossibleMoves(res.board);
+  const notify = (noti) => {
+    console.log(noti);
+  };
+
+  const handleCellClick = (square) => {
+    if (selectedPiece) {
+      fetch(
+        `http://localhost:4002/make-move?starting_square=${selectedPiece}&ending_square=${square}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      )
+        .then((res) => res.json())
+        .then((res) => {
+          if (res.board) {
+            setBoard(res.board);
+          }
+          setPossibleMoves([]);
+          setSelectedPiece(null);
+          console.log(res.message);
+        })
+        .catch((err) => notify(err));
+    } else {
+      fetch(`http://localhost:4002/possible-moves?square=${square}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
       })
-      .catch((err) => console.log(err));
+        .then((res) => res.json())
+        .then((res) => {
+          if (res.board) {
+            setPossibleMoves(res.board);
+          }
+          setSelectedPiece(square);
+        })
+        .catch((err) => notify(err));
+    }
   };
 
   return (
@@ -52,10 +83,18 @@ export default function Chessboard() {
                   }`}
                 >
                   <button
-                    className="w-20 h-20"
-                    onClick={() => handleCellClick(rowIndex, colIndex)}
+                    className="w-20 h-20 flex justify-center items-center"
+                    onClick={() =>
+                      handleCellClick(a.tuple_to_square(colIndex, rowIndex))
+                    }
                   >
-                    {piece === 0 ? null : piece}
+                    {piece === 0 ? null : (
+                      <img
+                        className="w-12 h-14"
+                        src={a.piece_to_url(piece)}
+                        alt={`Piece ${piece}`}
+                      />
+                    )}
                   </button>
                 </td>
               ))}

@@ -45,13 +45,12 @@ async def get_moves():
 
 @app.get("/reset")
 async def reset():
-    board.fillNaturalBoard()
+    print(board.fillNaturalBoard())
     return {"board": board.getBoard()}
 
 
 @app.post("/possible-moves")
-async def possible_moves(x: int, y: int):
-    square = tuple_to_square((y, x))
+async def possible_moves(square: str):
     moves = board.getMovesOfPiece(square)
     return {"possible_moves": moves, "board": board.getBoardOfMoves(moves)}
 
