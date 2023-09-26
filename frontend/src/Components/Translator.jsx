@@ -37,11 +37,19 @@ const piece_to_url = (piece) => {
   return url;
 };
 
+const matchColor = (sq1, sq2) => {
+  const tp1 = tuple_to_square(sq1);
+  const tp2 = tuple_to_square(sq2);
+
+  return tp1[0] + (tp1[1] % 2) === tp2[0] + (tp2[1] % 2);
+};
+
 const Translator = {
   tuple_to_square,
   square_to_tuple,
   dict,
   piece_to_url,
+  matchColor,
 };
 
 export default Translator;

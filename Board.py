@@ -1,5 +1,6 @@
 from Constants import *
 from Translator import *
+import random
 
 
 class Board:
@@ -95,6 +96,24 @@ class Board:
             return "No piece at starting position"
         return "OK"
 
+    def makeRandomMove(self, color):
+        possible_moves = []
+        if color == "white":
+            options = [1, 3, 5, 7, 9, 11]
+        elif color == "black":
+            options = [2, 4, 6, 8, 10, 12]
+        for i in range(len(self.board)):
+            for j in range(len(self.board)):
+                if self.board[i][j] in options:
+                    moves = self.getMovesOfPiece(tuple_to_square((j, i)))
+                    if len(moves) > 0:
+                        possible_moves.append([tuple_to_square((j, i)), moves])
+
+        if len(possible_moves) > 0:
+            piece = random.choice(possible_moves)
+            move = random.choice(piece[1])
+            return [piece[0], move]
+
     def getMovesOfPiece(self, coords):
         coords = square_to_tuple(coords)
         piece = self.getBoardValue(coords[0], coords[1])
@@ -102,32 +121,32 @@ class Board:
         # White Pawn
         if piece == 1:
             # Check if pawn can go forward one
-            if self.getBoardValue(coords[0], coords[1]-1) == 0:
+            if 0 <= coords[1]-1 < 8 and self.getBoardValue(coords[0], coords[1]-1) == 0:
                 moves.append((coords[0], coords[1] - 1))
             # Check if pawn can go forward two
-            if coords[1] == 6 and self.getBoardValue(coords[0], coords[1]-2) == 0:
+            if coords[1] == 6 and 0 <= coords[1]-2 < 8 and self.getBoardValue(coords[0], coords[1]-2) == 0:
                 moves.append((coords[0], coords[1] - 2))
             # Check if pawn can take a piece at left diagonal
-            if self.getBoardValue(coords[0]-1, coords[1]-1) != 0:
+            if 0 <= coords[0]-1 < 8 and 0 <= coords[1]-1 < 8 and self.getBoardValue(coords[0]-1, coords[1]-1) != 0:
                 moves.append((coords[0]-1, coords[1] - 1))
-            # Check if pawn can take a piece at right di agonal
-            if self.getBoardValue(coords[0]+1, coords[1]-1) != 0:
+            # Check if pawn can take a piece at right diagonal
+            if 0 <= coords[0]+1 < 8 and 0 <= coords[1]-1 < 8 and self.getBoardValue(coords[0]+1, coords[1]-1) != 0:
                 moves.append((coords[0]+1, coords[1] - 1))
             # Check if pawn can en passant
 
         # Black Pawn
         elif piece == 2:
             # Check if pawn can go forward one
-            if self.getBoardValue(coords[0], coords[1]+1) == 0:
+            if 0 <= coords[1]+1 < 8 and self.getBoardValue(coords[0], coords[1]+1) == 0:
                 moves.append((coords[0], coords[1] + 1))
             # Check if pawn can go forward two
-            if coords[1] == 1 and self.getBoardValue(coords[0], coords[1]+2) == 0:
+            if coords[1] == 1 and 0 <= coords[1]+2 < 8 and self.getBoardValue(coords[0], coords[1]+2) == 0:
                 moves.append((coords[0], coords[1] + 2))
             # Check if pawn can take a piece at left diagonal
-            if self.getBoardValue(coords[0]-1, coords[1]+1) != 0:
+            if 0 <= coords[0]-1 < 8 and 0 <= coords[1]+1 < 8 and self.getBoardValue(coords[0]-1, coords[1]+1) != 0:
                 moves.append((coords[0]-1, coords[1] + 1))
             # Check if pawn can take a piece at right diagonal
-            if self.getBoardValue(coords[0]+1, coords[1]+1) != 0:
+            if 0 <= coords[0]+1 < 8 and 0 <= coords[1]+1 < 8 and self.getBoardValue(coords[0]+1, coords[1]+1) != 0:
                 moves.append((coords[0]+1, coords[1] + 1))
             # Check if pawn can en passant
 

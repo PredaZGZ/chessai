@@ -45,14 +45,21 @@ async def get_moves():
 
 @app.get("/reset")
 async def reset():
-    print(board.fillNaturalBoard())
+    board.fillNaturalBoard()
     return {"board": board.getBoard()}
 
 
-@app.post("/possible-moves")
+@app.get("/possible-moves")
 async def possible_moves(square: str):
     moves = board.getMovesOfPiece(square)
     return {"possible_moves": moves, "board": board.getBoardOfMoves(moves)}
+
+
+@app.post("/random-move")
+async def random_move(color: str):
+    moves = board.makeRandomMove(color)
+    board.move(moves[0], moves[1])
+    return {"sq1": moves[0], "sq2": moves[1], "board": board.getBoard()}
 
 if __name__ == "__main__":
     import uvicorn
