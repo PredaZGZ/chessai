@@ -133,8 +133,14 @@ class Board:
             if 0 <= coords[0]+1 < 8 and 0 <= coords[1]-1 < 8 and self.getBoardValue(coords[0]+1, coords[1]-1) != 0:
                 moves.append((coords[0]+1, coords[1] - 1))
             # Check if pawn can en passant
-
-        # Black Pawn
+            if coords[1] == 3:
+                # Check if there is a black pawn to the left for en passant
+                if 0 <= coords[0]-1 < 8 and self.getBoardValue(coords[0]-1, coords[1]) == 2:
+                    moves.append((coords[0]-1, coords[1]-1))
+                # Check if there is a black pawn to the right for en passant
+                if 0 <= coords[0]+1 < 8 and self.getBoardValue(coords[0]+1, coords[1]) == 2:
+                    moves.append((coords[0]+1, coords[1]-1))
+            # Black Pawn
         elif piece == 2:
             # Check if pawn can go forward one
             if 0 <= coords[1]+1 < 8 and self.getBoardValue(coords[0], coords[1]+1) == 0:
@@ -149,7 +155,13 @@ class Board:
             if 0 <= coords[0]+1 < 8 and 0 <= coords[1]+1 < 8 and self.getBoardValue(coords[0]+1, coords[1]+1) != 0:
                 moves.append((coords[0]+1, coords[1] + 1))
             # Check if pawn can en passant
-
+            if coords[1] == 4:
+                # Check if there is a white pawn to the left for en passant
+                if 0 <= coords[0]-1 < 8 and self.getBoardValue(coords[0]-1, coords[1]) == 1:
+                    moves.append((coords[0]-1, coords[1]+1))
+                # Check if there is a white pawn to the right for en passant
+                if 0 <= coords[0]+1 < 8 and self.getBoardValue(coords[0]+1, coords[1]) == 1:
+                    moves.append((coords[0]+1, coords[1]+1))
         # Knight
         elif piece == 5 or piece == 6:
             # Check if knight can go forward two and left one
