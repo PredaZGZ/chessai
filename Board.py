@@ -428,3 +428,73 @@ class Board:
             coords = square_to_tuple(move)
             board[coords[1]][coords[0]] = 1
         return board
+
+    def _find_king(self, board, color):
+        target = 11 if color == "white" else 12
+        for y in range(8):
+            for x in range(8):
+                if board[y][x] == target:
+                    return (x, y)
+        return None
+
+    def _is_in_check_board(self, board, color):
+        king_pos = self._find_king(board, color)
+        if king_pos is None:
+            return True
+        king_sq = tuple_to_square(king_pos)
+        opponent = "black" if color == "white" else "white"
+        temp = Board()
+        temp.setBoard([row[:] for row in board])
+        for y in range(8):
+            for x in range(8):
+                piece = board[y][x]
+                if piece != 0:
+                    if opponent == "white" and piece % 2 > 0:
+                        from_sq = tuple_to_square((x, y))
+                        moves = temp.getMovesOfPiece(from_sq)
+                        if king_sq in moves:
+                            return True
+                    if opponent == "black" and piece % 2 == 0:
+                        from_sq = tuple_to_square((x, y))
+                        moves = temp.getMovesOfPiece(from_sq)
+                        if king_sq in moves:
+                            return True
+        return False
+
+    def is_in_check(self, color=None):
+        if color is None:
+            color = "white" if self.whiteTurn else "black"
+        return self._is_in_check_board(self.board, color)
+
+    def _has_legal_moves(self, color):
+        for y in range(8):
+            for x in range(8):
+                piece = self.board[y][x]
+                if piece != 0:
+                    if color == "white" and piece % 2 > 0:
+                        from_sq = tuple_to_square((x, y))
+                        for move in self.getMovesOfPiece(from_sq):
+                            board_copy = [row[:] for row in self.board]
+                            dest = square_to_tuple(move)
+                            board_copy[y][x] = 0
+                            board_copy[dest[1]][dest[0]] = piece
+                            if not self._is_in_check_board(board_copy, color):
+                                return True
+                    if color == "black" and piece % 2 == 0:
+                        from_sq = tuple_to_square((x, y))
+                        for move in self.getMovesOfPiece(from_sq):
+                            board_copy = [row[:] for row in self.board]
+                            dest = square_to_tuple(move)
+                            board_copy[y][x] = 0
+                            board_copy[dest[1]][dest[0]] = piece
+                            if not self._is_in_check_board(board_copy, color):
+                                return True
+        return False
+
+    def is_checkmate(self):
+        color = "white" if self.whiteTurn else "black"
+        return self.is_in_check(color) and not self._has_legal_moves(color)
+
+    def is_stalemate(self):
+        color = "white" if self.whiteTurn else "black"
+        return not self.is_in_check(color) and not self._has_legal_moves(color)
